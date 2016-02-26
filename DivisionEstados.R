@@ -28,7 +28,7 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   
   a <- eventReactive(input$recalc, {
-    colorRampPalette(c("red","white"))(1000)[a]
+    colorRampPalette(c("red","white"))(1000)[round(1000*runif(32))]
   }, ignoreNULL = FALSE)
   
   output$mymap <- renderLeaflet({
