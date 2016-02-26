@@ -3,31 +3,18 @@ library(rgdal)
 library(sp)
 library(shiny)
 
-#b<- runif(32)
-#for(i in 1:32)
-  
-#  a[i]=rgb(colorRamp(c("red","white"),space = "rgb")(b[i])[1],
-#         colorRamp(c("red","white"),space = "rgb")(b[i])[2],
-#         colorRamp(c("red","white"),space = "rgb")(b[i])[3],maxColorValue = 255)
-
-gama.red <- function(n){
-  b<-runif(n)
-  a<-c()
-  for(i in 1:n)
-    a[i]=rgb(colorRamp(c("red","white"),space = "rgb")(b[i])[1],
-             colorRamp(c("red","white"),space = "rgb")(b[i])[2],
-             colorRamp(c("red","white"),space = "rgb")(b[i])[3],maxColorValue = 255)
-  return(a)
-}
-
 ogrInfo(".","dest_2012gw")
 dest<-readOGR(".","dest_2012gw")  
 
-a<-gama.red(32)
+a<-runif(32) 
+a<-round(a*1000)
+b<-colorRampPalette(c("red","white"))(1000)[a]
 
 m <- leaflet() %>%
   addTiles() %>%  
-  addPolygons(data=dest,color = a,stroke = F,popup=dest$NOM_ENT)
+  addPolygons(data=dest,color = b,stroke = F,popup=dest$NOM_ENT) %>% 
+  addProviderTiles("CartoDB.Positron") %>%
+  addLegend(pal = colorNumeric(palette = colorRampPalette(c("white","red"))(32),domain = c(1,0)),values =seq(0,1,length.out = 32),title = "Cantidad de Municipios")
 m 
 
 #Implementado en shiny
@@ -41,16 +28,15 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   
   a <- eventReactive(input$recalc, {
-    gama.red(32)
+    colorRampPalette(c("red","white"))(1000)[a]
   }, ignoreNULL = FALSE)
   
   output$mymap <- renderLeaflet({
     leaflet() %>%
       addTiles() %>%
-      addPolygons(data=dest,color = a(),stroke = F,popup=dest$NOM_ENT)
-    
+      addPolygons(data=dest,color = a(),stroke = F,popup=dest$NOM_ENT) %>%
+      addProviderTiles("CartoDB.Positron")
   })
 }
 
 shinyApp(ui, server)
-
